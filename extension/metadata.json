@@ -1,0 +1,11 @@
+{
+  "uuid": "music-player@pranav",
+  "name": "Music Player",
+  "description": "A customizable music player for GNOME Shell",
+  "version": 1,
+  "shell-version": [
+    "48",
+    "49"
+  ],
+  "url": "https://github.com/PranavKarthikSS/music-extension.git"
+}
