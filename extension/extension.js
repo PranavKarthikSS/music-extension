@@ -44,6 +44,64 @@ class MusicIndicator extends PanelMenu.Button {
 
         this.menu.addMenuItem(this._statusItem);
 
+        this._playPauseItem =
+            new PopupMenu.PopupMenuItem('▶  Play / Pause');
+
+        this._playPauseItem.connect('activate', () => {
+            try {
+                this._mpris.playPause();
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            if (!this.menu.isOpen)
+                this.menu.open();
+
+            return GLib.SOURCE_REMOVE;
+        });
+            } catch (error) {
+                logError(error, 'Music Player PlayPause error');
+            }
+        });
+
+        this.menu.addMenuItem(this._playPauseItem);
+
+        this._previousItem =
+            new PopupMenu.PopupMenuItem('⏮  Previous');
+
+        this._previousItem.connect('activate', () => {
+            try {
+                this._mpris.previous();
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            if (!this.menu.isOpen)
+                this.menu.open();
+
+            return GLib.SOURCE_REMOVE;
+        });
+            } catch (error) {
+                logError(error, 'Music Player Previous error');
+            }
+        });
+
+        this.menu.addMenuItem(this._previousItem);
+
+
+        this._nextItem =
+            new PopupMenu.PopupMenuItem('⏭  Next');
+
+        this._nextItem.connect('activate', () => {
+            try {
+                this._mpris.next();
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            if (!this.menu.isOpen)
+                this.menu.open();
+
+            return GLib.SOURCE_REMOVE;
+        });
+            } catch (error) {
+                logError(error, 'Music Player Next error');
+            }
+        });
+
+        this.menu.addMenuItem(this._nextItem);
+
         this._updatePlayer();
 
         this._updateTimer = GLib.timeout_add_seconds(

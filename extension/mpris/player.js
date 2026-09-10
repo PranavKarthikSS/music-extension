@@ -95,6 +95,57 @@ export class MprisPlayer {
         );
     }
 
+    playPause() {
+        if (!this._playerName)
+            return;
+
+        this._bus.call_sync(
+            this._playerName,
+            '/org/mpris/MediaPlayer2',
+            'org.mpris.MediaPlayer2.Player',
+            'PlayPause',
+            null,
+            null,
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null
+        );
+    }
+
+    previous() {
+        if (!this._playerName)
+            return;
+
+        this._bus.call_sync(
+            this._playerName,
+            '/org/mpris/MediaPlayer2',
+            'org.mpris.MediaPlayer2.Player',
+            'Previous',
+            null,
+            null,
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null
+        );
+    }
+
+    next() {
+        if (!this._playerName)
+            return;
+
+        this._bus.call_sync(
+            this._playerName,
+            '/org/mpris/MediaPlayer2',
+            'org.mpris.MediaPlayer2.Player',
+            'Next',
+            null,
+            null,
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null
+        );
+    }
+
     destroy() {
         this._bus = null;
         this._playerName = null;
