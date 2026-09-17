@@ -77,47 +77,94 @@ this._statusItem.reactive = false;
 
 	this._progressItem.add_child(this._progressTrack);
 
-	this._progressTrack.connect(
-    		'button-press-event',
-    		(actor, event) => {
-        	try {
-            		const [stageX] =
-                	event.get_coords();
+// SEEK / DRAG SUPPORT
 
-            	const [
-                	trackX,
-            	] = actor.get_transformed_position();
+this._isDragging = false;
 
-            const width =
-                actor.get_width();
+this._progressTrack.connect(
+    'button-press-event',
+    (actor, event) => {
+        try {
+            const button =
+                event.get_button();
 
-            if (width <= 0)
-                return Clutter.EVENT_STOP;
+            // Only respond to left mouse button
+            if (button !== 1)
+                return Clutter.EVENT_PROPAGATE;
 
-            const clickX =
-                stageX - trackX;
+            this._isDragging = true;
 
-            const fraction =
-                Math.min(
-                    Math.max(
-                        clickX / width,
-                        0
-                    ),
-                    1
-                );
+            const [stageX] =
+                event.get_coords();
 
-            this._seekToFraction(fraction);
+            this._seekFromStageX(
+                stageX
+            );
 
         } catch (error) {
             logError(
                 error,
-                'Music Player seek UI error'
-            	);
-        	}
+                'Music Player seek press error'
+            );
+        }
 
-        	return Clutter.EVENT_STOP;
-    		}
-	);
+        return Clutter.EVENT_STOP;
+    }
+);
+
+this._progressTrack.connect(
+    'motion-event',
+    (actor, event) => {
+        if (!this._isDragging)
+            return Clutter.EVENT_PROPAGATE;
+
+        try {
+            const [stageX] =
+                event.get_coords();
+
+            this._seekFromStageX(
+                stageX
+            );
+
+        } catch (error) {
+            logError(
+                error,
+                'Music Player seek motion error'
+            );
+        }
+
+        return Clutter.EVENT_STOP;
+    }
+);
+
+this._progressTrack.connect(
+    'button-release-event',
+    (actor, event) => {
+        if (event.get_button() !== 1)
+            return Clutter.EVENT_PROPAGATE;
+
+        this._isDragging = false;
+
+        try {
+            const [stageX] =
+                event.get_coords();
+
+            this._seekFromStageX(
+                stageX
+            );
+
+            this._keepMenuOpen();
+
+        } catch (error) {
+            logError(
+                error,
+                'Music Player seek release error'
+            );
+        }
+
+        return Clutter.EVENT_STOP;
+    }
+);
 
 	this._timeItem = new PopupMenu.PopupMenuItem(
     		'0:00 / 0:00'
@@ -441,6 +488,34 @@ _seekToFraction(fraction) {
     }
 }
 
+_seekFromStageX(stageX) {
+    const [
+        trackX,
+    ] = this._progressTrack.get_transformed_position();
+
+    const width =
+        this._progressTrack.get_width();
+
+    if (width <= 0)
+        return;
+
+    const clickX =
+        stageX - trackX;
+
+    const fraction =
+        Math.min(
+            Math.max(
+                clickX / width,
+                0
+            ),
+            1
+        );
+
+    this._seekToFraction(
+        fraction
+    );
+}
+
 	_updatePlayer() {
     try {
         if (!this._mpris.findPlayer()) {
@@ -505,6 +580,7 @@ _seekToFraction(fraction) {
             position / 1000000;
 
         // Calculate progress
+if (!this._isDragging) {
         if (durationSeconds > 0) {
             const fraction =
                 Math.min(
@@ -521,6 +597,7 @@ _seekToFraction(fraction) {
         } else {
             this._progressBar.set_width(0);
         }
+}
 
         // Update time display
         this._timeItem.label.text =
@@ -555,6 +632,8 @@ _seekToFraction(fraction) {
 	}
 
     destroy() {
+
+this._isDragging = false;
 
         if (this._updateTimer) {
 
